@@ -10,6 +10,7 @@ pub fn parse(s: String) -> Result(Puuid, Nil) {
     _ -> Error(Nil)
   }
 }
+
 pub fn to_string(puuid: Puuid) -> String {
-  
+  puuid.value
 }
