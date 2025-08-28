@@ -1,15 +1,10 @@
 import account.{type Account}
 import client.{type Client}
 import gleam/httpc
-import gleam/io
 import gleam/result
 import puuid.{type Puuid}
 
 // get request-info from https://developer.riotgames.com/apis
-
-pub fn main() -> Nil {
-  io.println("Hello from gleague_api!")
-}
 
 fn http_error_to_string(error: httpc.HttpError) -> String {
   case error {
