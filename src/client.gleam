@@ -1,4 +1,4 @@
-import gleam/result
+import gleam/http
 import gleam/http/request
 import platform.{type PlatformId}
 import region.{type ApiRegion}
@@ -12,12 +12,19 @@ pub type RequestPrefix {
   Region
 }
 
-pub fn get_request(client: Client, request_prefix: RequestPrefix, path: String) -> Result(request.Request(String), Nil) {
+pub fn get_request(
+  client: Client,
+  request_prefix: RequestPrefix,
+  path: String,
+) -> request.Request(String) {
   let prefix = case request_prefix {
     Region -> client.region |> region.to_string()
     PlatformId -> client.platform_id |> platform.to_string()
   }
 
-  request.to(prefix <> ".api.riotgames.com" <> path)
-  |> result.map(request.set_header(_, "Authorization", client.api_key))
+  request.new()
+  |> request.set_scheme(http.Https)
+  |> request.set_host(prefix <> ".api.riotgames.com")
+  |> request.set_path(path)
+  |> request.set_header("X-Riot-Token", client.api_key)
 }

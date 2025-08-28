@@ -1,3 +1,4 @@
+import account.{type Account}
 import client.{type Client}
 import gleam/httpc
 import gleam/io
@@ -12,33 +13,49 @@ pub fn main() -> Nil {
 
 fn http_error_to_string(error: httpc.HttpError) -> String {
   case error {
-    httpc.FailedToConnect(ip4:, ip6:) -> "Failed to connect"
-    httpc.InvalidUtf8Response -> "Invalid UTF-8 response"
-    httpc.ResponseTimeout -> "Response timeout"
+    httpc.InvalidUtf8Response ->
+      "Invalid UTF-8 response: The response body contained non-UTF-8 data, but UTF-8 data was expected."
+    httpc.FailedToConnect(_, _) ->
+      "Failed to connect: It was not possible to connect to the host."
+    httpc.ResponseTimeout ->
+      "Response timeout: The response was not received within the configured timeout period."
   }
 }
 
 // Account V1
-pub type Account {
-  Account(puuid: String, game_name: String, tag_line: String)
-}
 
 pub fn get_account_by_puuid(
   client client: Client,
   puuid puuid: Puuid,
 ) -> Result(Account, String) {
-  let path = "/riot/account/v1/accoutns/by-puuid/" <> puuid |> puuid.to_string()
-  use request <- result.try(
+  let path = "/riot/account/v1/accounts/by-puuid/" <> puuid |> puuid.to_string()
+  let request =
     client
     |> client.get_request(client.Region, path)
-    |> result.replace_error("Could not create request"),
-  )
   use response <- result.try(
     request
     |> httpc.send()
     |> result.map_error(http_error_to_string),
   )
-  todo
+
+  use response <- result.try(case response.status {
+    400 -> Error("Http error 400: Bad request")
+    401 -> Error("Http error 401: Unauthorized")
+    403 -> Error("Http error 403: Forbidden")
+    404 -> Error("Http error 404: Data not found")
+    405 -> Error("Http error 405: Method not allowed")
+    415 -> Error("Http error 415: Unsupported media type")
+    429 -> Error("Http error 429: Rate limit exceeded")
+    500 -> Error("Http error 500: Internal server error")
+    502 -> Error("Http error 502: Bad gateway")
+    503 -> Error("Http error 503: Service unavailable")
+    504 -> Error("Http error 504: Gateway timeout")
+    _ -> Ok(response)
+  })
+
+  response.body
+  |> account.from_json()
+  |> result.replace_error("Could not parse JSON")
 }
 
 pub fn get_account_by_riot_id(
