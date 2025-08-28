@@ -8,25 +8,11 @@ pub fn main() -> Nil {
   io.println("Hello from gleague_api!")
 }
 
+// Account V1
 pub type Account {
   Account(puuid: String, game_name: String, tag_line: String)
 }
 
-pub type ActiveShard {
-  ActiveShard()
-}
-
-pub type ShardedGame {
-  Valorant
-  LegendsOfRuneterra
-}
-
-pub type RegionGame {
-  LeagueOfLegends
-  TeamfightTactics
-}
-
-// Account V1
 pub fn get_account_by_puuid(
   client client: Client,
   puuid puuid: Puuid,
@@ -48,12 +34,26 @@ pub fn get_account_by_access_token(
   todo
 }
 
+pub type ShardedGame {
+  Valorant
+  LegendsOfRuneterra
+}
+
+pub type ActiveShard {
+  ActiveShard
+}
+
 pub fn get_active_shard_for_a_player(
   client client: Client,
   game game: ShardedGame,
   puuid puuid: Puuid,
 ) -> Result(ActiveShard, String) {
   todo
+}
+
+pub type RegionGame {
+  LeagueOfLegends
+  TeamfightTactics
 }
 
 pub fn get_active_region(
