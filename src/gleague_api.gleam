@@ -26,6 +26,7 @@ pub type RegionGame {
   TeamfightTactics
 }
 
+// Account V1
 pub fn get_account_by_puuid(
   client client: Client,
   puuid puuid: Puuid,
