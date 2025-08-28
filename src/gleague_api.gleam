@@ -1,3 +1,4 @@
+import client.{type Client}
 import gleam/io
 import puuid.{type Puuid}
 
@@ -5,10 +6,6 @@ import puuid.{type Puuid}
 
 pub fn main() -> Nil {
   io.println("Hello from gleague_api!")
-}
-
-pub type Client {
-  Client(api_key: String)
 }
 
 pub type Account {
