@@ -1,4 +1,5 @@
 import gleam/io
+import puuid.{type Puuid}
 
 // get request-info from https://developer.riotgames.com/apis
 
@@ -30,7 +31,7 @@ pub type RegionGame {
 
 pub fn get_account_by_puuid(
   client client: Client,
-  puuid puuid: String,
+  puuid puuid: Puuid,
 ) -> Result(Account, String) {
   todo
 }
@@ -52,7 +53,7 @@ pub fn get_account_by_access_token(
 pub fn get_active_shard_for_a_player(
   client client: Client,
   game game: ShardedGame,
-  puuid puuid: String,
+  puuid puuid: Puuid,
 ) -> Result(ActiveShard, String) {
   todo
 }
@@ -60,7 +61,7 @@ pub fn get_active_shard_for_a_player(
 pub fn get_active_region(
   client client: Client,
   game game: RegionGame,
-  puuid puuid: String,
+  puuid puuid: Puuid,
 ) -> Result(Account, String) {
   todo
 }
