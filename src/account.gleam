@@ -9,8 +9,8 @@ pub type Account {
 pub fn from_json(json: String) -> Result(Account, json.DecodeError) {
   let account_decoder = {
     use puuid <- decode.field("puuid", decode.string)
-    use game_name <- decode.field("game_name", decode.optional(decode.string))
-    use tag_line <- decode.field("tag_line", decode.optional(decode.string))
+    use game_name <- decode.field("gameName", decode.optional(decode.string))
+    use tag_line <- decode.field("tagLine", decode.optional(decode.string))
     decode.success(Account(puuid:, game_name:, tag_line:))
   }
   json.parse(from: json, using: account_decoder)
