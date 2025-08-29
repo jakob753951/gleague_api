@@ -1,0 +1,23 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "process",
+			"command": "gleam",
+			"args": [
+				"test"
+			],
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"label": "gleam test",
+			"options": {
+				"env": {
+					"RIOT_API_KEY": "INSERT RIOT API KEY",
+					"TEST_USER_PUUID": "INSERT TEST-USER PUUID"
+				}
+			}
+		}
+	]
+}
