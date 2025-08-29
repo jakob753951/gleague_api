@@ -3,6 +3,7 @@ import client.{type Client}
 import gleam/http/response
 import gleam/httpc
 import gleam/result
+import gleam/uri
 import puuid.{type Puuid}
 
 // get request-info from https://developer.riotgames.com/apis
@@ -63,7 +64,27 @@ pub fn get_account_by_riot_id(
   game_name game_name: String,
   tag_line tag_line: String,
 ) -> Result(Account, String) {
-  todo
+  let path = {
+    "/riot/account/v1/accounts/by-riot-id/"
+    <> uri.percent_encode(game_name)
+    <> "/"
+    <> uri.percent_encode(tag_line)
+  }
+
+  let request =
+    client
+    |> client.get_request(client.Region, path)
+  use response <- result.try(
+    request
+    |> httpc.send()
+    |> result.map_error(http_error_to_string),
+  )
+
+  use response <- result.try(check_response_status_code(response))
+
+  response.body
+  |> account.from_json()
+  |> result.replace_error("Could not parse JSON")
 }
 
 pub fn get_account_by_access_token(
