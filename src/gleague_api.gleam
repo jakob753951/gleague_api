@@ -1,5 +1,6 @@
 import account.{type Account}
 import client.{type Client}
+import gleam/http/response
 import gleam/httpc
 import gleam/result
 import puuid.{type Puuid}
@@ -14,6 +15,23 @@ fn http_error_to_string(error: httpc.HttpError) -> String {
       "Failed to connect: It was not possible to connect to the host."
     httpc.ResponseTimeout ->
       "Response timeout: The response was not received within the configured timeout period."
+  }
+}
+
+fn check_response_status_code(response: response.Response(a)) {
+  case response.status {
+    400 -> Error("Http error 400: Bad request")
+    401 -> Error("Http error 401: Unauthorized")
+    403 -> Error("Http error 403: Forbidden")
+    404 -> Error("Http error 404: Data not found")
+    405 -> Error("Http error 405: Method not allowed")
+    415 -> Error("Http error 415: Unsupported media type")
+    429 -> Error("Http error 429: Rate limit exceeded")
+    500 -> Error("Http error 500: Internal server error")
+    502 -> Error("Http error 502: Bad gateway")
+    503 -> Error("Http error 503: Service unavailable")
+    504 -> Error("Http error 504: Gateway timeout")
+    _ -> Ok(response)
   }
 }
 
@@ -33,20 +51,7 @@ pub fn get_account_by_puuid(
     |> result.map_error(http_error_to_string),
   )
 
-  use response <- result.try(case response.status {
-    400 -> Error("Http error 400: Bad request")
-    401 -> Error("Http error 401: Unauthorized")
-    403 -> Error("Http error 403: Forbidden")
-    404 -> Error("Http error 404: Data not found")
-    405 -> Error("Http error 405: Method not allowed")
-    415 -> Error("Http error 415: Unsupported media type")
-    429 -> Error("Http error 429: Rate limit exceeded")
-    500 -> Error("Http error 500: Internal server error")
-    502 -> Error("Http error 502: Bad gateway")
-    503 -> Error("Http error 503: Service unavailable")
-    504 -> Error("Http error 504: Gateway timeout")
-    _ -> Ok(response)
-  })
+  use response <- result.try(check_response_status_code(response))
 
   response.body
   |> account.from_json()
