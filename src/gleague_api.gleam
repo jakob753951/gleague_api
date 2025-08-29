@@ -89,6 +89,7 @@ pub fn get_account_by_riot_id(
 
 pub fn get_account_by_access_token(
   client client: Client,
+  access_token access_token: String
 ) -> Result(Account, String) {
   todo
 }
