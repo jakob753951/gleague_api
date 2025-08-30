@@ -1,7 +1,9 @@
 import account.{type Account}
 import client.{type Client}
+import gleam/dynamic/decode
 import gleam/http/response
 import gleam/httpc
+import gleam/json
 import gleam/result
 import gleam/uri
 import puuid.{type Puuid}
@@ -89,7 +91,7 @@ pub fn get_account_by_riot_id(
 
 pub fn get_account_by_access_token(
   client client: Client,
-  access_token access_token: String
+  access_token access_token: String,
 ) -> Result(Account, String) {
   todo
 }
@@ -99,8 +101,36 @@ pub type ShardedGame {
   LegendsOfRuneterra
 }
 
+fn sharded_game_to_string(game: ShardedGame) -> String {
+  case game {
+    LegendsOfRuneterra -> "lor"
+    Valorant -> "val"
+  }
+}
+
+fn sharded_game_decoder() {
+  use game <- decode.then(decode.string)
+  case game {
+    "lor" -> decode.success(LegendsOfRuneterra)
+    "val" -> decode.success(Valorant)
+    _ -> decode.failure(Valorant, "ShardedGame")
+  }
+}
+
 pub type ActiveShard {
-  ActiveShard
+  ActiveShard(puuid: String, game: ShardedGame, active_shard: String)
+}
+
+pub fn active_shard_from_json(
+  json: String,
+) -> Result(ActiveShard, json.DecodeError) {
+  let account_decoder = {
+    use puuid <- decode.field("puuid", decode.string)
+    use game <- decode.field("game", sharded_game_decoder())
+    use active_shard <- decode.field("activeShard", decode.string)
+    decode.success(ActiveShard(puuid:, game:, active_shard:))
+  }
+  json.parse(from: json, using: account_decoder)
 }
 
 pub fn get_active_shard_for_a_player(
@@ -108,7 +138,28 @@ pub fn get_active_shard_for_a_player(
   game game: ShardedGame,
   puuid puuid: Puuid,
 ) -> Result(ActiveShard, String) {
-  todo
+  let path = {
+    "/riot/account/v1/active-shards/by-game/"
+    <> game |> sharded_game_to_string()
+    <> "/by-puuid"
+    <> puuid |> puuid.to_string()
+  }
+
+  let request =
+    client
+    |> client.get_request(client.Region, path)
+  use response <- result.try(
+    request
+    |> httpc.send()
+    |> result.map_error(http_error_to_string),
+  )
+
+  use response <- result.try(check_response_status_code(response))
+
+  response.body
+  |> active_shard_from_json()
+  |> result.replace_error("Could not parse JSON")
+  |> echo
 }
 
 pub type RegionGame {

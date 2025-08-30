@@ -34,3 +34,16 @@ pub fn account_by_riot_id_is_ok_test() {
 
   account.puuid
 }
+
+pub fn active_shard_for_player_is_ok_test() {
+  let assert Ok(api_key) = envoy.get("RIOT_API_KEY")
+  let assert Ok(puuid) =
+    envoy.get("TEST_USER_PUUID")
+    |> result.try(puuid.parse)
+
+  let client = client.Client(api_key, platform.EUW1, region.Europe)
+  client
+  |> gleague_api.get_active_shard_for_a_player(gleague_api.Valorant, puuid)
+  |> echo
+  |> result.is_ok
+}
